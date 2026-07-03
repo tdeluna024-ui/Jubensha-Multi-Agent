@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://scriptkill-editor-team/schemas/character_payload.schema.json",
+  "title": "Character Payload",
+  "description": "C-04 数据分发器为每个角色生成的'专属素材包'。D 部门所有 agent 只读该角色的 payload，不读其他。",
+  "type": "object",
+  "required": [
+    "schema_version", "char_id", "char_name", "generated_at",
+    "source_bible_sha256", "visible_details", "owned_clues",
+    "public_clues", "applied_mechanics"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+
+    "char_id": {
+      "type": "string",
+      "pattern": "^char_\\d{2}$"
+    },
+    "char_name": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+
+    "source_bible_sha256": {
+      "type": "string",
+      "description": "生成该 payload 时所用 Bible 的 sha256，用于 Bible 修订后检测过期"
+    },
+
+    "visible_details": {
+      "type": "array",
+      "description": "该角色能看到的细节（visibility = ALL 或 char_id）",
+      "items": {
+        "type": "object",
+        "required": ["id", "content", "visibility", "type", "act_introduced", "purpose"],
+        "properties": {
+          "id":              { "type": "string", "pattern": "^d_\\d{3}$" },
+          "content":         { "type": "string" },
+          "visibility":      { "type": "string", "description": "ALL 或 char_id" },
+          "type":            { "type": "string", "enum": ["环境细节", "身体细节", "情感细节"] },
+          "act_introduced":  { "type": "integer", "minimum": 1 },
+          "purpose":         { "type": "string" }
+        }
+      }
+    },
+
+    "owned_clues": {
+      "type": "array",
+      "description": "该角色专属线索（visibility = char_id）",
+      "items": {
+        "type": "object",
+        "required": ["id", "content", "location", "act_introduced", "truth_link", "visibility"],
+        "properties": {
+          "id":              { "type": "string", "pattern": "^c_\\d{3}$" },
+          "content":         { "type": "string" },
+          "location":        { "type": "string" },
+          "act_introduced":  { "type": "integer", "minimum": 1 },
+          "truth_link":      { "type": "array", "items": { "type": "string" } },
+          "visibility":      { "type": "string", "description": "char_id（私密归属角色）" },
+          "is_misleading":   { "type": "boolean", "default": false }
+        }
+      }
+    },
+
+    "public_clues": {
+      "type": "array",
+      "description": "公共线索全集（所有 payload 都包含同样一份）",
+      "items": {
+        "type": "object",
+        "required": ["id", "content"],
+        "properties": {
+          "id":              { "type": "string", "pattern": "^c_\\d{3}$" },
+          "content":         { "type": "string" },
+          "location":        { "type": "string" },
+          "act_introduced":  { "type": "integer" },
+          "truth_link":      { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "applied_mechanics": {
+      "type": "array",
+      "description": "该角色能用的机制（affects 含 char_id 或 ALL）",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "ability", "constraint", "covers_truth_id"],
+        "properties": {
+          "id":                    { "type": "string", "pattern": "^m_\\d{2}$" },
+          "name":                  { "type": "string" },
+          "narrative_description": { "type": "string" },
+          "ability":               { "type": "string" },
+          "constraint":            { "type": "string" },
+          "covers_truth_id":       { "type": "string" },
+          "uses_per_act":          { "type": "object" }
+        }
+      }
+    },
+
+    "personal_props": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "角色专属实物道具引用（F-01 打包时为每件生成 brief）"
+    },
+
+    "distribution_warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "C-04 自检产生的警告（如均衡度低于均值），D 部门可参考但不强制"
+    }
+  }
+}

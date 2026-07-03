@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://scriptkill-editor-team/schemas/project_brief.schema.json",
+  "title": "Project Brief",
+  "description": "项目立项 brief，由 A-01 类型分流官产出，是后续所有 agent 的全局开关",
+  "type": "object",
+  "required": [
+    "schema_version", "project_name", "created_at", "one_liner",
+    "type", "players", "duration", "style", "complexity", "sensitivity", "locked"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "project_name": {
+      "type": "string",
+      "description": "项目代号，中文，无空格无特殊字符"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "one_liner": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 200,
+      "description": "一句话故事核"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["硬核机制本", "情感氛围本", "阵营本", "还原本", "混合本"],
+      "description": "本子类型，决定全流程调参"
+    },
+    "players": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 8
+    },
+    "duration": {
+      "type": "string",
+      "enum": ["短(2-3h)", "中(3-5h)", "长(5h+)"]
+    },
+    "style": {
+      "type": "string",
+      "enum": ["写实", "和风", "古风", "民国", "赛博", "玄幻", "西式", "其他"]
+    },
+    "complexity": {
+      "type": "string",
+      "enum": ["轻松", "中等", "硬核"]
+    },
+    "sensitivity": {
+      "type": "object",
+      "required": ["violence", "politics", "sexuality", "minors"],
+      "properties": {
+        "violence":  { "type": "string", "enum": ["不含", "轻度", "中度", "重度"] },
+        "politics":  { "type": "string", "enum": ["不含", "轻度", "中度"] },
+        "sexuality": { "type": "string", "enum": ["不含", "暗示", "软情色"] },
+        "minors":    { "type": "string", "enum": ["不含", "出现但无伤", "含伤害"] }
+      }
+    },
+    "type_specific_options": {
+      "type": "object",
+      "description": "按 type 不同有不同字段",
+      "properties": {
+        "multi_truth_layers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "description": "多重真相层数，仅硬核机制本/还原本适用"
+        },
+        "physical_constraints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "物理约束类型清单"
+        },
+        "emotional_emphasis": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "情感氛围本专用：要重点经营的情感主题"
+        },
+        "factions": {
+          "type": "integer",
+          "description": "阵营本专用：阵营数"
+        }
+      }
+    },
+    "reference_suggestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "建议鉴本师调用的范本名（A-01 提出，A-02 执行）"
+    },
+    "user_constraints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "用户额外指定的硬约束（如必须含某个角色、某个场景）"
+    },
+    "pass_threshold_overrides": {
+      "type": "object",
+      "description": "覆盖默认 QA 阈值（默认 7.5）",
+      "properties": {
+        "E-01": { "type": "number", "minimum": 0, "maximum": 10 },
+        "E-02": { "type": "number", "minimum": 0, "maximum": 10 }
+      }
+    },
+    "locked": {
+      "type": "boolean",
+      "description": "true = 已锁定，后续 agent 可读"
+    },
+    "pending_decisions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "用户拒答的维度，下游 agent 遇到时回头问"
+    }
+  }
+}

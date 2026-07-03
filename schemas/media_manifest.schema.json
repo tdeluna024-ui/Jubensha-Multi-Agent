@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "media_manifest.schema.json",
+  "title": "MediaManifest",
+  "description": "多模态资产注册表。每个项目在 06_multimodal/media_manifest.json 存放此结构。所有素材必须登记在此，且必须绑定 canonical_story_state.json 中的实体（clue_id 或 character_id）。I-01 多模态审计员使用此文件进行验证。",
+  "type": "object",
+  "required": ["project_id", "canonical_sha256", "generated_at", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "项目标识符，与 00_brief/project_brief.json 中的 project_id 一致",
+      "example": "沪滩残局"
+    },
+    "canonical_sha256": {
+      "type": "string",
+      "description": "生成此 manifest 时 canonical_story_state.json 的 SHA256 校验值。I-01 用于检测 canonical 是否在 manifest 生成后被修改。",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "manifest 生成时间（ISO 8601 UTC）"
+    },
+    "assets": {
+      "type": "array",
+      "description": "所有多模态素材列表",
+      "items": {
+        "$ref": "#/definitions/MediaAsset"
+      },
+      "minItems": 0
+    }
+  },
+  "definitions": {
+    "MediaAsset": {
+      "type": "object",
+      "required": [
+        "asset_id",
+        "asset_class",
+        "media_type",
+        "canonical_binding",
+        "act",
+        "file_path",
+        "offline_available",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "type": "string",
+          "description": "素材唯一 ID，格式：{media_type_prefix}_{NNN}",
+          "pattern": "^(vis|aud|vid|int)_[0-9]{3}$",
+          "examples": ["vis_001", "aud_003", "vid_002", "int_001"]
+        },
+        "asset_class": {
+          "type": "string",
+          "enum": ["atmosphere", "evidence", "mechanism", "promo"],
+          "description": "素材分类：atmosphere=氛围素材（不承载推理信息）；evidence=证物素材（绑定 clue_id，玩家须仔细观察）；mechanism=机制素材（玩家主动操作）；promo=宣发素材（不进入游戏流程）"
+        },
+        "media_type": {
+          "type": "string",
+          "enum": [
+            "image_portrait",
+            "image_prop",
+            "image_map",
+            "image_promo",
+            "audio_ambience",
+            "audio_character_theme",
+            "audio_sfx",
+            "audio_evidence",
+            "video_opening",
+            "video_flashback",
+            "interactive_dm_console",
+            "interactive_qr_page",
+            "interactive_ending"
+          ],
+          "description": "素材媒介类型"
+        },
+        "canonical_binding": {
+          "type": "object",
+          "description": "与 canonical_story_state.json 的绑定关系。evidence 和 mechanism 类必须有非空绑定。atmosphere 类可为空绑定（但需写明理由）。",
+          "required": ["type", "ids"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["clue", "character", "act_event", "none"],
+              "description": "绑定实体类型。evidence 类必须用 clue；atmosphere 类可用 none（需填 none_reason）"
+            },
+            "ids": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "绑定的 ID 列表，如 ['c_008', 'c_009'] 或 ['char_02']",
+              "examples": [["c_008"], ["char_02", "char_04"], ["act_3_reveal"]]
+            },
+            "none_reason": {
+              "type": "string",
+              "description": "仅当 type=none 时填写，说明为何不绑定 canonical 实体（如纯氛围音景）"
+            }
+          }
+        },
+        "act": {
+          "type": ["integer", "string"],
+          "description": "对应幕次（1-5）或 'all'（贯穿全程）或 'promo'（宣发）",
+          "examples": [1, 2, 3, "all", "promo"]
+        },
+        "file_path": {
+          "type": "string",
+          "description": "素材文件路径（相对于项目工作区根目录）。prompt.md 表示素材尚未生成，仅有提示词。",
+          "examples": [
+            "06_multimodal/visual/character_portraits/char_02_苏婉书.prompt.md",
+            "07_dm_console/dm_console_assets/audio/幕2_音景.mp3"
+          ]
+        },
+        "offline_available": {
+          "type": "boolean",
+          "description": "素材是否可离线使用（本地文件，不依赖网络）。所有正式素材必须为 true。prompt.md 阶段可为 false。"
+        },
+        "offline_fallback": {
+          "type": "string",
+          "description": "断网时的替代方案。atmosphere 类至少有文字描述；evidence 类必须有完整文字版本。",
+          "examples": ["DM口述：「远处传来爵士乐和上海话喧嚣声...」", "DM朗读prop_brief台词（见05_delivery/prop_briefs/c008_法医鉴定报告.md）"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["prompt_ready", "generated", "approved", "integrated"],
+          "description": "prompt_ready=提示词已写，待生成；generated=AI已生成，待审核；approved=人工审核通过；integrated=已集成入 DM 控场台或角色材料"
+        },
+        "duration_sec": {
+          "type": "number",
+          "description": "音频/视频素材时长（秒）。I-01 用于检查单幕被动视频总时长 ≤ 90 秒。",
+          "minimum": 0
+        },
+        "contains_facts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "素材中包含的事实字段列表（用于 I-01 验证）。每项格式：'{canonical_path}: {expected_value}'",
+          "examples": [
+            "characters.char_01.age_at_death: 73",
+            "medical_facts.aconitine_injection.dose_pure_mg: 2-4mg",
+            "key_props.c_056.holder: char_02"
+          ]
+        },
+        "spoiler_risk": {
+          "type": "string",
+          "enum": ["none", "low", "medium", "high"],
+          "description": "剧透风险等级。high = 任何提前泄露均触发 I-01 FAIL"
+        },
+        "generated_by": {
+          "type": "string",
+          "description": "生成此素材的 agent ID（M-02/M-03/M-04）",
+          "examples": ["M-02", "M-03", "M-04"]
+        },
+        "i01_verified": {
+          "type": "boolean",
+          "description": "I-01 审计是否已通过。发版前所有 evidence 类素材必须为 true。"
+        },
+        "notes": {
+          "type": "string",
+          "description": "备注（自由文本）"
+        }
+      }
+    }
+  }
+}

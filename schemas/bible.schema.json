@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://scriptkill-editor-team/schemas/bible.schema.json",
+  "title": "Global World Bible (Core)",
+  "description": "全系统的真理之书。锁版后只读，所有下游 agent 必须以此为准。仅保留 core 内容；细节进 bible_appendix.json。",
+  "type": "object",
+  "required": ["schema_version", "version", "locked_at", "project", "paradox", "acts", "characters"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "version":        { "type": "string", "pattern": "^\\d+\\.\\d+$", "description": "Bible 版本，如 0.1 / 0.2" },
+    "locked_at":      { "type": "string", "format": "date-time" },
+    "locked_by":      { "type": "string" },
+    "supersedes":     { "type": ["string", "null"], "description": "上一版 Bible 的 sha256" },
+
+    "project": {
+      "type": "object",
+      "required": ["name", "type", "players", "duration"],
+      "properties": {
+        "name":     { "type": "string" },
+        "type":     { "type": "string" },
+        "players":  { "type": "integer" },
+        "duration": { "type": "string" }
+      }
+    },
+
+    "history_summary": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "历史摘要。完整 history.md 进 appendix"
+    },
+
+    "family_tree_core": {
+      "type": "object",
+      "description": "主要角色族谱。叶子节点远亲进 appendix",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "display_name":  { "type": "string" },
+          "born":          { "type": "integer" },
+          "died":          { "type": ["integer", "null"] },
+          "bio_father":    { "type": ["string", "null"] },
+          "bio_mother":    { "type": ["string", "null"] },
+          "social_father": { "type": ["string", "null"] },
+          "social_mother": { "type": ["string", "null"] },
+          "spouse":        { "type": ["string", "null"] },
+          "knows_own_bio_father": { "type": "boolean" }
+        }
+      }
+    },
+
+    "paradox": {
+      "type": "object",
+      "required": ["topology", "core_trick", "truth_layers"],
+      "properties": {
+        "topology": {
+          "type": "string",
+          "enum": ["loop", "nested", "parallel", "multi-layered"]
+        },
+        "core_trick":      { "type": "string" },
+        "the_impossibility": { "type": "string", "description": "诡计要营造的不可能现场" },
+        "truth_layers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["layer_id", "killer", "motive_chain", "physical_method"],
+            "properties": {
+              "layer_id":      { "type": "string", "pattern": "^tl_\\d{2}$" },
+              "name":          { "type": "string" },
+              "killer":        { "type": "string", "description": "char_id" },
+              "motive_chain":  { "type": "array", "items": { "type": "string" } },
+              "physical_method": { "type": "string" },
+              "key_distinguishing_clues": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^c_\\d{3}$" }
+              }
+            }
+          }
+        },
+        "physical_constraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type":    { "type": "string" },
+              "values":  {},
+              "formula": { "type": "string" },
+              "logic":   { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "acts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "required": ["act", "name", "goals", "must_reveal", "must_hide"],
+        "properties": {
+          "act":            { "type": "integer", "minimum": 1 },
+          "name":           { "type": "string" },
+          "duration_min":   { "type": "integer" },
+          "goals":          { "type": "array", "items": { "type": "string" } },
+          "must_reveal":    { "type": "array", "items": { "type": "string" } },
+          "must_hide":      { "type": "array", "items": { "type": "string" } },
+          "player_actions": { "type": "array", "items": { "type": "string" } },
+          "dm_hints":       { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "characters": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["id", "display_name", "age", "occupation"],
+        "properties": {
+          "id":           { "type": "string", "pattern": "^char_\\d{2}$" },
+          "display_name": { "type": "string" },
+          "age":          { "type": "integer" },
+          "occupation":   { "type": "string" },
+          "bio_id":       {
+            "type": "object",
+            "description": "客观真相，由 B-01 + B-02 给定",
+            "properties": {
+              "real_father":   { "type": ["string", "null"] },
+              "real_mother":   { "type": ["string", "null"] },
+              "true_actions":  { "type": "array", "items": { "type": "string" } },
+              "real_relationships": { "type": "object" }
+            }
+          },
+          "cog_id":       {
+            "type": ["object", "null"],
+            "description": "认知身份，D-01 填充后非空",
+            "properties": {
+              "self_perception":   { "type": "string" },
+              "believed_father":   { "type": "string" },
+              "believed_mother":   { "type": "string" },
+              "modified_memories": { "type": "array" }
+            }
+          },
+          "voice_card": {
+            "type": "object",
+            "description": "角色语感档案，D-03 角色润色师使用",
+            "properties": {
+              "speech_register":         { "type": "string" },
+              "sentence_length":         { "type": "string", "enum": ["短", "中短", "中", "中长", "长"] },
+              "preferred_verb_density":  { "type": "string", "enum": ["低", "中", "高"] },
+              "metaphor_style":          { "type": "string" },
+              "self_address":            { "type": "string" },
+              "emotion_expression":      { "type": "string" },
+              "vocabulary_taboo":        { "type": "array", "items": { "type": "string" } },
+              "vocabulary_signature":    { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "personal_props": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "该角色专属实物道具，F-01 打包时为每件生成 brief"
+          }
+        }
+      }
+    },
+
+    "must_reveal_matrix": {
+      "type": "object",
+      "description": "按 act 索引的 must_reveal 全集，便于 D-02 主笔快查",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
+
+    "must_hide_matrix": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
+
+    "known_contradictions": {
+      "type": "array",
+      "description": "审计时发现的矛盾，由主编剧 agent 记录，后续修订 Bible 时处理",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id":           { "type": "string" },
+          "discovered_at": { "type": "string", "format": "date-time" },
+          "description":  { "type": "string" },
+          "blocker_id":   { "type": "string" }
+        }
+      }
+    }
+  }
+}
