@@ -3,7 +3,7 @@
 > 用 29 个 AI agent 组成的"编剧团"，工业化生产线下剧本杀（谋杀之谜）剧本。
 > 基于 Claude Code / Codex 的多 agent 协作框架，v11.0 沉浸升级版。
 
-![架构拓扑](scriptkill_v11_architecture_topology.png)
+![架构全景](scriptkill_v11_architecture_panorama.png)
 
 ## 这是什么
 
@@ -25,6 +25,8 @@
 | M 多模态部 | M-01 体验总监 / M-02 视觉 / M-03 音视频 / M-04 互动构建 | 沉浸体验物料 |
 
 调度中枢：**master-director（主编剧）**——不写剧本，只做调度和决策上报。
+
+![架构拓扑](scriptkill_v11_architecture_topology.png)
 
 ## v11.0 四道沉浸质量门
 
