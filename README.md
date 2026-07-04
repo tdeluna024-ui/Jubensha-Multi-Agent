@@ -3,7 +3,14 @@
 > 用 29 个 AI agent 组成的"编剧团"，工业化生产线下剧本杀（谋杀之谜）剧本。
 > 基于 Claude Code / Codex 的多 agent 协作框架，v11.0 沉浸升级版。
 
-![架构全景](scriptkill_v11_architecture_panorama.png)
+![架构全景](scriptkill_v11_architecture_overview.png)
+
+<details>
+<summary>📐 点开查看完整架构总图（竖版长图：Human on the Loop → LOOP 工程层 → HARNESS 工程层 → CONTEXT 工程层 → MODEL 层 → SDD 规范底座）</summary>
+
+![架构总图](scriptkill_v11_architecture_panorama.png)
+
+</details>
 
 ## 这是什么
 
